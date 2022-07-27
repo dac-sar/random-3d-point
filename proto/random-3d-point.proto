@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package panaew;
+
+option go_package = "pb/";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+
+service Random3DPointService {
+    rpc Get3dVector(google.protobuf.Empty) returns (Random3DVector) {}
+  }
+
+message Random3DVector {
+    float x = 1;
+    float y = 2;
+    float z = 3;
+    //well known type
+    google.protobuf.Timestamp createTime = 4;
+}
