@@ -2,16 +2,15 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"math/rand"
-	"net"
+	"net/http"
 	"time"
 
 	"github.com/golang/protobuf/ptypes/timestamp"
+	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	"github.ibm.com/Tomonori-Mukai1/random-3d-point/pb"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/reflection"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
@@ -21,20 +20,25 @@ type server1 struct {
 }
 
 func main() {
-	port := 50051
-	listenPort, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
-	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
+
+	grpcServer := grpc.NewServer()
+
+	wrappedServer := grpcweb.WrapServer(
+		grpcServer,
+		// CORSの設定
+		grpcweb.WithOriginFunc(func(origin string) bool {
+			return origin == "http://localhost:8080"
+		}),
+	)
+	pb.RegisterRandom3DPointServiceServer(grpcServer, &server1{})
+	mux := http.NewServeMux()
+	mux.Handle("/", http.HandlerFunc(wrappedServer.ServeHTTP))
+	// ポート50051で起動
+	hs := &http.Server{
+		Addr:    ":50051",
+		Handler: mux,
 	}
-
-	server := grpc.NewServer()
-	pb.RegisterRandom3DPointServiceServer(server, &server1{})
-
-	// サーバーリフレクションを有効にしています。
-	// 有効にすることでシリアライズせずとも後述する`grpc_cli`で動作確認ができるようになります。
-	reflection.Register(server)
-	// サーバーを起動
-	server.Serve(listenPort)
+	log.Fatal(hs.ListenAndServe())
 }
 
 //interfaceの実装

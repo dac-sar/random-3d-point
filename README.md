@@ -6,7 +6,8 @@
 go run main.go
 ```
 
-## デバッグ方法
+<!-- HTTP対応により現在grpc_cliが利用不可のためコメントアウト -->
+<!-- ## デバッグ方法
 
 ```
 grpc_cli call localhost:50051 panaew.Random3DPointService.Get3dVector ''
@@ -23,4 +24,4 @@ createTime {
   nanos: 933400000
 }
 Rpc succeeded with OK status
-```
+``` -->
